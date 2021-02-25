@@ -19,7 +19,7 @@ g = 9.8             # gravity constant
 # initial state 
 x0 = np.array([ [0.0],
                 [0.0],
-                [0.3],
+                [math.pi],
                 [0.0]  ])
 
 Q = np.diag([0.0, 1.0, 1.0, 0.0])
@@ -86,7 +86,7 @@ def controller(x0):
         cost_fn += cp.quad_form(x[:, t+1], Q)
         cost_fn += cp.quad_form(u[:, t], R)
 
-        constr += [x[:, t+1] == A * x[:, t] + B * u[:,t]]
+        constr += [x[:, t+1] == A @ x[:, t] + B @ u[:,t]]
 
     constr += [x[:, 0] == x0[:,0]]
     
@@ -175,9 +175,12 @@ for i in range(50):
         plt.clf()
         px = float(x[0])
         theta = float(x[2])
-        plt.xlim([-5.0, 2.0])
+        
         draw_cart(px, theta)
-        plt.pause(0.001)
+        plt.ylim([0.0, 5.0])
+        plt.pause(1) if i == 0 else plt.pause(0.01)
+
+
 
 print('\n\n\n')
 print(f' Final state : {x} ')
