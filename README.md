@@ -1,1 +1,1 @@
-# learning-mpc
+# model predictive control
