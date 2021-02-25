@@ -11,15 +11,15 @@ import matplotlib.pyplot as plt
 
 
 # constants
-l = 2.0             # length of rod
-m = 0.3             # bob weight
+l = 3.0             # length of rod
+m = 0.4             # bob weight
 M = 1.0             # cart weight   
 g = 9.8             # gravity constant
 
 # initial state 
 x0 = np.array([ [0.0],
                 [0.0],
-                [math.pi],
+                [1.0],
                 [0.0]  ])
 
 Q = np.diag([0.0, 1.0, 1.0, 0.0])
@@ -46,14 +46,14 @@ def state_space_matrix():
     
     # parameters
     A = np.array([  [1.0, dt, 0.0, 0.0],
-                    [0.0, 1.0, (m*g)*dt/M, 0.0],
+                    [0.0, 1.0, -(m*g)*dt/M, 0.0],
                     [0.0, 0.0, 1.0, dt],
                     [0.0, 0.0, g*dt*(M+m)/(l*M), 1.0]  ])
 
     B = np.array([  [0.0],
                     [dt / M],
                     [0.0],
-                    [dt / (l*M)]  ])
+                    [-dt / (l*M)]  ])
 
 
     print(f' {A} \n {B} ')
@@ -80,6 +80,7 @@ def controller(x0):
 
     cost_fn = 0.0
     constr = []
+    constr += [x[:, 0] == x0[:,0]]
 
     # mpc loop
     for t in range(T):
@@ -88,8 +89,6 @@ def controller(x0):
 
         constr += [x[:, t+1] == A @ x[:, t] + B @ u[:,t]]
 
-    constr += [x[:, 0] == x0[:,0]]
-    
     print(constr)
 
     prob = cp.Problem(cp.Minimize(cost_fn), constr)
@@ -113,9 +112,9 @@ def controller(x0):
 
 
 def draw_cart(xt, theta):
-    cart_w = 1.0
-    cart_h = 0.5
-    radius = 0.1
+    cart_w = 2.0
+    cart_h = 1.0
+    radius = 0.25
 
     cx = np.matrix([-cart_w / 2.0, cart_w / 2.0, cart_w /
                     2.0, -cart_w / 2.0, -cart_w / 2.0])
@@ -124,9 +123,9 @@ def draw_cart(xt, theta):
 
     cx = cx + xt
 
-    bx = np.matrix([0.0, l * math.sin(-theta)])
+    bx = np.matrix([0.0, l * math.sin(theta)])
     bx += xt
-    by = np.matrix([cart_h, l * math.cos(-theta) + cart_h])
+    by = np.matrix([cart_h, l * math.cos(theta) + cart_h])
     by += radius * 2.0
 
     angles = np.arange(0.0, math.pi * 2.0, math.radians(3.0))
@@ -167,8 +166,7 @@ x = copy.deepcopy(x0)
 for i in range(50):
 
     # simulation loop
-    ox, dx, theta, dtheta, ou = controller(x)
-    u = ou
+    ox, dx, theta, dtheta, u = controller(x)
     x = step(x, u)
         
     if animate:
@@ -178,7 +176,7 @@ for i in range(50):
         
         draw_cart(px, theta)
         plt.ylim([0.0, 5.0])
-        plt.pause(1) if i == 0 else plt.pause(0.01)
+        plt.pause(1) if i == 0 else plt.pause(1/30)
 
 
 
