@@ -10,21 +10,19 @@ import matplotlib.pyplot as plt
 
 
 
-# constants
+# inv-pendulum constants
 l = 3.0             # length of rod
 m = 0.4             # bob weight
 M = 1.0             # cart weight   
 g = 9.8             # gravity constant
-
 # initial state 
 x0 = np.array([ [0.0],
                 [0.0],
                 [1.0],
                 [0.0]  ])
-
+# model param
 Q = np.diag([0.0, 1.0, 1.0, 0.0])
 R = np.diag([0.01])
-
 nx = 4              # number of state [x, xdot, theta, thetadot]
 nu = 1              # number of input [u] :: force
 T = 50              # Time Horizon
@@ -84,8 +82,8 @@ def controller(x0):
 
     # mpc loop
     for t in range(T):
-        cost_fn += cp.quad_form(x[:, t+1], Q)
         cost_fn += cp.quad_form(u[:, t], R)
+        cost_fn += cp.quad_form(x[:, t+1], Q)
 
         constr += [x[:, t+1] == A @ x[:, t] + B @ u[:,t]]
 
